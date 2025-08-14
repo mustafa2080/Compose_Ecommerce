@@ -1,0 +1,37 @@
+package com.company.npw.domain.model
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class User(
+    val id: String = "",
+    val email: String = "",
+    val name: String = "",
+    val phoneNumber: String = "",
+    val profileImageUrl: String = "",
+    val address: Address? = null,
+    val isEmailVerified: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    val preferences: UserPreferences = UserPreferences()
+) : Parcelable
+
+@Parcelize
+data class Address(
+    val street: String = "",
+    val city: String = "",
+    val state: String = "",
+    val zipCode: String = "",
+    val country: String = "",
+    val isDefault: Boolean = false
+) : Parcelable
+
+@Parcelize
+data class UserPreferences(
+    val isDarkMode: Boolean = false,
+    val language: String = "en",
+    val notificationsEnabled: Boolean = true,
+    val emailNotifications: Boolean = true,
+    val pushNotifications: Boolean = true
+) : Parcelable
