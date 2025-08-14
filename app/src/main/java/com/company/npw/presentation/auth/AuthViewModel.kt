@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
@@ -41,39 +42,34 @@ class AuthViewModel @Inject constructor(
             try {
                 _authState.value = AuthState.Loading
 
-                // Add timeout to prevent infinite loading
-                val result = withTimeoutOrNull(10000) { // 10 seconds timeout
-                    if (authRepository.isUserLoggedIn) {
-                        authRepository.getCurrentUser().collect { resource ->
-                            when (resource) {
-                                is Resource.Success -> {
-                                    val user = resource.data
-                                    if (user != null) {
-                                        preferencesManager.setUserId(user.id)
-                                        preferencesManager.setLoggedIn(true)
-                                        _authState.value = AuthState.Authenticated(user)
-                                    } else {
-                                        preferencesManager.setLoggedIn(false)
-                                        _authState.value = AuthState.Unauthenticated
-                                    }
-                                }
-                                is Resource.Error -> {
-                                    preferencesManager.setLoggedIn(false)
-                                    _authState.value = AuthState.Unauthenticated
-                                }
-                                is Resource.Loading -> {
-                                    _authState.value = AuthState.Loading
-                                }
+                if (authRepository.isUserLoggedIn) {
+                    val resource = withTimeoutOrNull(5000) { // 5 seconds timeout
+                        authRepository.getCurrentUser().first { it !is Resource.Loading }
+                    }
+
+                    when (resource) {
+                        is Resource.Success -> {
+                            val user = resource.data
+                            if (user != null) {
+                                preferencesManager.setUserId(user.id)
+                                preferencesManager.setLoggedIn(true)
+                                _authState.value = AuthState.Authenticated(user)
+                            } else {
+                                preferencesManager.setLoggedIn(false)
+                                _authState.value = AuthState.Unauthenticated
                             }
                         }
-                    } else {
-                        preferencesManager.setLoggedIn(false)
-                        _authState.value = AuthState.Unauthenticated
+                        is Resource.Error -> {
+                            preferencesManager.setLoggedIn(false)
+                            _authState.value = AuthState.Unauthenticated
+                        }
+                        null -> {
+                            // Timeout occurred
+                            preferencesManager.setLoggedIn(false)
+                            _authState.value = AuthState.Unauthenticated
+                        }
                     }
-                }
-
-                // If timeout occurred, set to unauthenticated
-                if (result == null) {
+                } else {
                     preferencesManager.setLoggedIn(false)
                     _authState.value = AuthState.Unauthenticated
                 }
@@ -87,7 +83,15 @@ class AuthViewModel @Inject constructor(
 
     fun loginWithEmail(email: String, password: String) {
         viewModelScope.launch {
-            authRepository.loginWithEmail(email, password).collect { resource ->
+            try {
+                _loginState.value = LoginState.Loading
+
+                val resource = withTimeoutOrNull(30000) { // 30 seconds timeout
+                    authRepository.loginWithEmail(email, password).first {
+                        it !is Resource.Loading
+                    }
+                }
+
                 when (resource) {
                     is Resource.Success -> {
                         val user = resource.data
@@ -103,17 +107,27 @@ class AuthViewModel @Inject constructor(
                     is Resource.Error -> {
                         _loginState.value = LoginState.Error(resource.message ?: "Login failed")
                     }
-                    is Resource.Loading -> {
-                        _loginState.value = LoginState.Loading
+                    null -> {
+                        _loginState.value = LoginState.Error("Login timeout - please try again")
                     }
                 }
+            } catch (e: Exception) {
+                _loginState.value = LoginState.Error(e.message ?: "Login failed")
             }
         }
     }
 
     fun registerWithEmail(email: String, password: String, name: String) {
         viewModelScope.launch {
-            authRepository.registerWithEmail(email, password, name).collect { resource ->
+            try {
+                _registerState.value = RegisterState.Loading
+
+                val resource = withTimeoutOrNull(30000) { // 30 seconds timeout
+                    authRepository.registerWithEmail(email, password, name).first {
+                        it !is Resource.Loading
+                    }
+                }
+
                 when (resource) {
                     is Resource.Success -> {
                         val user = resource.data
@@ -129,10 +143,12 @@ class AuthViewModel @Inject constructor(
                     is Resource.Error -> {
                         _registerState.value = RegisterState.Error(resource.message ?: "Registration failed")
                     }
-                    is Resource.Loading -> {
-                        _registerState.value = RegisterState.Loading
+                    null -> {
+                        _registerState.value = RegisterState.Error("Registration timeout - please try again")
                     }
                 }
+            } catch (e: Exception) {
+                _registerState.value = RegisterState.Error(e.message ?: "Registration failed")
             }
         }
     }
