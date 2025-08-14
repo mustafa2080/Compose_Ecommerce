@@ -7,3 +7,14 @@ plugins {
     id("com.google.gms.google-services") version "4.4.0" apply false
     id("com.google.firebase.crashlytics") version "2.9.9" apply false
 }
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // Alternative repositories for better connectivity
+        maven { url = uri("https://jcenter.bintray.com") }
+        maven { url = uri("https://maven.google.com") }
+        gradlePluginPortal()
+    }
+}

@@ -8,6 +8,14 @@ plugins {
     id("com.google.firebase.crashlytics")
 }
 
+repositories {
+    google()
+    mavenCentral()
+    // Alternative repositories for better connectivity
+    maven { url = uri("https://jcenter.bintray.com") }
+    maven { url = uri("https://maven.google.com") }
+}
+
 android {
     namespace = "com.company.npw"
     compileSdk = 34
