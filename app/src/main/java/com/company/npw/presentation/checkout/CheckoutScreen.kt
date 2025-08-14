@@ -220,9 +220,9 @@ private fun CheckoutContent(
                     CustomButton(
                         text = "Place Order",
                         onClick = onPlaceOrder,
-                        enabled = checkoutState.selectedAddress != null && 
+                        enabled = checkoutState.selectedAddress != null &&
                                 checkoutState.selectedPaymentMethod != null,
-                        leadingIcon = Icons.Default.Payment
+                        icon = Icons.Default.Payment
                     )
                 }
             }

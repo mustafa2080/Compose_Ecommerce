@@ -138,10 +138,13 @@ fun ProductDetailsScreen(
                 )
             }
             uiState.product != null -> {
-                ProductDetailsContent(
-                    product = uiState.product,
-                    modifier = Modifier.padding(paddingValues)
-                )
+                val product = uiState.product
+                if (product != null) {
+                    ProductDetailsContent(
+                        product = product,
+                        modifier = Modifier.padding(paddingValues)
+                    )
+                }
             }
         }
     }

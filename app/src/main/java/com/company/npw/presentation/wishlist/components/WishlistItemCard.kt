@@ -172,7 +172,7 @@ fun WishlistItemCard(
                 onClick = onAddToCartClick,
                 enabled = wishlistItem.product.inStock,
                 modifier = Modifier.fillMaxWidth(),
-                leadingIcon = Icons.Default.ShoppingCart
+                icon = Icons.Default.ShoppingCart
             )
         }
     }
