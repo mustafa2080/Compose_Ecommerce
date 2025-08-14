@@ -30,7 +30,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance()
+    fun provideFirebaseDatabase(): FirebaseDatabase {
+        val database = FirebaseDatabase.getInstance()
+        // Enable offline persistence
+        database.setPersistenceEnabled(true)
+        return database
+    }
 
     @Provides
     @Singleton
