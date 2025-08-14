@@ -63,6 +63,10 @@ class AuthViewModel @Inject constructor(
                             preferencesManager.setLoggedIn(false)
                             _authState.value = AuthState.Unauthenticated
                         }
+                        is Resource.Loading -> {
+                            // This shouldn't happen since we filter out loading states
+                            _authState.value = AuthState.Loading
+                        }
                         null -> {
                             // Timeout occurred
                             preferencesManager.setLoggedIn(false)
@@ -107,6 +111,10 @@ class AuthViewModel @Inject constructor(
                     is Resource.Error -> {
                         _loginState.value = LoginState.Error(resource.message ?: "Login failed")
                     }
+                    is Resource.Loading -> {
+                        // This shouldn't happen since we filter out loading states
+                        _loginState.value = LoginState.Loading
+                    }
                     null -> {
                         _loginState.value = LoginState.Error("Login timeout - please try again")
                     }
@@ -142,6 +150,10 @@ class AuthViewModel @Inject constructor(
                     }
                     is Resource.Error -> {
                         _registerState.value = RegisterState.Error(resource.message ?: "Registration failed")
+                    }
+                    is Resource.Loading -> {
+                        // This shouldn't happen since we filter out loading states
+                        _registerState.value = RegisterState.Loading
                     }
                     null -> {
                         _registerState.value = RegisterState.Error("Registration timeout - please try again")
