@@ -181,3 +181,23 @@ fun SmallButton(
         }
     }
 }
+
+// Alias for compatibility with existing code
+@Composable
+fun CustomButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    isLoading: Boolean = false,
+    icon: ImageVector? = null
+) {
+    PrimaryButton(
+        text = text,
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        isLoading = isLoading,
+        icon = icon
+    )
+}

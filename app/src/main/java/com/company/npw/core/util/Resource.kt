@@ -10,7 +10,7 @@ sealed class Resource<T>(
 }
 
 inline fun <T> Resource<T>.onSuccess(action: (value: T) -> Unit): Resource<T> {
-    if (this is Resource.Success) action(data)
+    if (this is Resource.Success && data != null) action(data)
     return this
 }
 

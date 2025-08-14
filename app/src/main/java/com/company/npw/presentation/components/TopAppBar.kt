@@ -24,7 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBar as MaterialTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -47,7 +47,7 @@ fun CustomTopAppBar(
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
-    TopAppBar(
+    MaterialTopAppBar(
         title = {
             Text(
                 text = title,
@@ -254,4 +254,19 @@ fun ActionButton(
             )
         }
     }
+}
+
+// Alias for compatibility with existing code
+@Composable
+fun TopAppBar(
+    title: String,
+    onBackClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    CustomTopAppBar(
+        title = title,
+        navigationIcon = Icons.Default.ArrowBack,
+        onNavigationClick = onBackClick,
+        modifier = modifier
+    )
 }

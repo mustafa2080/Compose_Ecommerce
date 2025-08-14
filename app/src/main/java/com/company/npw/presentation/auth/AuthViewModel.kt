@@ -70,10 +70,14 @@ class AuthViewModel @Inject constructor(
                 when (resource) {
                     is Resource.Success -> {
                         val user = resource.data
-                        preferencesManager.setUserId(user.id)
-                        preferencesManager.setLoggedIn(true)
-                        _loginState.value = LoginState.Success(user)
-                        _authState.value = AuthState.Authenticated(user)
+                        if (user != null) {
+                            preferencesManager.setUserId(user.id)
+                            preferencesManager.setLoggedIn(true)
+                            _loginState.value = LoginState.Success(user)
+                            _authState.value = AuthState.Authenticated(user)
+                        } else {
+                            _loginState.value = LoginState.Error("Login failed - no user data")
+                        }
                     }
                     is Resource.Error -> {
                         _loginState.value = LoginState.Error(resource.message ?: "Login failed")
@@ -92,10 +96,14 @@ class AuthViewModel @Inject constructor(
                 when (resource) {
                     is Resource.Success -> {
                         val user = resource.data
-                        preferencesManager.setUserId(user.id)
-                        preferencesManager.setLoggedIn(true)
-                        _registerState.value = RegisterState.Success(user)
-                        _authState.value = AuthState.Authenticated(user)
+                        if (user != null) {
+                            preferencesManager.setUserId(user.id)
+                            preferencesManager.setLoggedIn(true)
+                            _registerState.value = RegisterState.Success(user)
+                            _authState.value = AuthState.Authenticated(user)
+                        } else {
+                            _registerState.value = RegisterState.Error("Registration failed - no user data")
+                        }
                     }
                     is Resource.Error -> {
                         _registerState.value = RegisterState.Error(resource.message ?: "Registration failed")
@@ -114,10 +122,14 @@ class AuthViewModel @Inject constructor(
                 when (resource) {
                     is Resource.Success -> {
                         val user = resource.data
-                        preferencesManager.setUserId(user.id)
-                        preferencesManager.setLoggedIn(true)
-                        _loginState.value = LoginState.Success(user)
-                        _authState.value = AuthState.Authenticated(user)
+                        if (user != null) {
+                            preferencesManager.setUserId(user.id)
+                            preferencesManager.setLoggedIn(true)
+                            _loginState.value = LoginState.Success(user)
+                            _authState.value = AuthState.Authenticated(user)
+                        } else {
+                            _loginState.value = LoginState.Error("Google login failed - no user data")
+                        }
                     }
                     is Resource.Error -> {
                         _loginState.value = LoginState.Error(resource.message ?: "Google login failed")
@@ -135,7 +147,7 @@ class AuthViewModel @Inject constructor(
             authRepository.resetPassword(email).collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
-                        _resetPasswordState.value = ResetPasswordState.Success(resource.data)
+                        _resetPasswordState.value = ResetPasswordState.Success(resource.data ?: "Password reset email sent")
                     }
                     is Resource.Error -> {
                         _resetPasswordState.value = ResetPasswordState.Error(resource.message ?: "Reset failed")
