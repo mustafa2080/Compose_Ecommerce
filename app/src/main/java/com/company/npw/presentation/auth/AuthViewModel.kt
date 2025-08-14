@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,28 +38,48 @@ class AuthViewModel @Inject constructor(
 
     private fun checkAuthState() {
         viewModelScope.launch {
-            if (authRepository.isUserLoggedIn) {
-                authRepository.getCurrentUser().collect { resource ->
-                    when (resource) {
-                        is Resource.Success -> {
-                            val user = resource.data
-                            if (user != null) {
-                                preferencesManager.setUserId(user.id)
-                                preferencesManager.setLoggedIn(true)
-                                _authState.value = AuthState.Authenticated(user)
-                            } else {
-                                _authState.value = AuthState.Unauthenticated
+            try {
+                _authState.value = AuthState.Loading
+
+                // Add timeout to prevent infinite loading
+                val result = withTimeoutOrNull(10000) { // 10 seconds timeout
+                    if (authRepository.isUserLoggedIn) {
+                        authRepository.getCurrentUser().collect { resource ->
+                            when (resource) {
+                                is Resource.Success -> {
+                                    val user = resource.data
+                                    if (user != null) {
+                                        preferencesManager.setUserId(user.id)
+                                        preferencesManager.setLoggedIn(true)
+                                        _authState.value = AuthState.Authenticated(user)
+                                    } else {
+                                        preferencesManager.setLoggedIn(false)
+                                        _authState.value = AuthState.Unauthenticated
+                                    }
+                                }
+                                is Resource.Error -> {
+                                    preferencesManager.setLoggedIn(false)
+                                    _authState.value = AuthState.Unauthenticated
+                                }
+                                is Resource.Loading -> {
+                                    _authState.value = AuthState.Loading
+                                }
                             }
                         }
-                        is Resource.Error -> {
-                            _authState.value = AuthState.Unauthenticated
-                        }
-                        is Resource.Loading -> {
-                            _authState.value = AuthState.Loading
-                        }
+                    } else {
+                        preferencesManager.setLoggedIn(false)
+                        _authState.value = AuthState.Unauthenticated
                     }
                 }
-            } else {
+
+                // If timeout occurred, set to unauthenticated
+                if (result == null) {
+                    preferencesManager.setLoggedIn(false)
+                    _authState.value = AuthState.Unauthenticated
+                }
+            } catch (e: Exception) {
+                // Handle any unexpected errors during auth check
+                preferencesManager.setLoggedIn(false)
                 _authState.value = AuthState.Unauthenticated
             }
         }

@@ -40,7 +40,7 @@ fun ECommerceNavigation(
                     }
                 },
                 onNavigateToMain = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
@@ -58,7 +58,7 @@ fun ECommerceNavigation(
                     navController.navigate(Screen.ForgotPassword.route)
                 },
                 onNavigateToMain = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
@@ -71,7 +71,7 @@ fun ECommerceNavigation(
                     navController.popBackStack()
                 },
                 onNavigateToMain = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
                 }
@@ -85,8 +85,12 @@ fun ECommerceNavigation(
                 }
             )
         }
-        
+
         // Main App Screens (with bottom navigation)
+        composable(Screen.Main.route) {
+            MainScreen(navController = navController)
+        }
+
         composable(Screen.Home.route) {
             MainScreen(navController = navController)
         }

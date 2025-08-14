@@ -1,6 +1,7 @@
 package com.company.npw.presentation.auth.register
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +26,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,8 +41,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -82,8 +88,9 @@ fun RegisterScreen(
         when (val state = registerState) {
             is RegisterState.Success -> {
                 context.showToast("Registration successful!")
-                onNavigateToMain()
                 authViewModel.clearRegisterState()
+                delay(100) // Small delay to ensure state is cleared
+                onNavigateToMain()
             }
             is RegisterState.Error -> {
                 context.showToast(state.message)
@@ -96,196 +103,242 @@ fun RegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                )
+            )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = stringResource(id = R.string.app_name),
-                modifier = Modifier.size(80.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
+            // Logo Card
+            Card(
+                modifier = Modifier.size(100.dp),
+                shape = CircleShape,
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = stringResource(id = R.string.app_name),
+                        modifier = Modifier.size(70.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Welcome Text
             Text(
                 text = "Create Account",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
             )
             
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                text = "Sign up to get started",
+                text = "Sign up to get started shopping",
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            // Name Field
-            OutlinedTextField(
-                value = name,
-                onValueChange = { 
-                    name = it
-                    nameError = ""
-                },
-                label = { Text("Full Name") },
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = null)
-                },
-                isError = nameError.isNotEmpty(),
-                supportingText = if (nameError.isNotEmpty()) {
-                    { Text(nameError) }
-                } else null,
+
+            // Registration Form Card
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Email Field
-            OutlinedTextField(
-                value = email,
-                onValueChange = { 
-                    email = it
-                    emailError = ""
-                },
-                label = { Text(stringResource(id = R.string.email)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = null)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                isError = emailError.isNotEmpty(),
-                supportingText = if (emailError.isNotEmpty()) {
-                    { Text(emailError) }
-                } else null,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Password Field
-            OutlinedTextField(
-                value = password,
-                onValueChange = { 
-                    password = it
-                    passwordError = ""
-                },
-                label = { Text(stringResource(id = R.string.password)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null)
-                },
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                        )
-                    }
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                isError = passwordError.isNotEmpty(),
-                supportingText = if (passwordError.isNotEmpty()) {
-                    { Text(passwordError) }
-                } else null,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Confirm Password Field
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { 
-                    confirmPassword = it
-                    confirmPasswordError = ""
-                },
-                label = { Text(stringResource(id = R.string.confirm_password)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null)
-                },
-                trailingIcon = {
-                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                        Icon(
-                            if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
-                        )
-                    }
-                },
-                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                isError = confirmPasswordError.isNotEmpty(),
-                supportingText = if (confirmPasswordError.isNotEmpty()) {
-                    { Text(confirmPasswordError) }
-                } else null,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Register Button
-            Button(
-                onClick = {
-                    if (validateInputs(name, email, password, confirmPassword) { nameErr, emailErr, passErr, confirmPassErr ->
-                        nameError = nameErr
-                        emailError = emailErr
-                        passwordError = passErr
-                        confirmPasswordError = confirmPassErr
-                    }) {
-                        authViewModel.registerWithEmail(email, password, name)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                enabled = registerState !is RegisterState.Loading
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             ) {
-                if (registerState is RegisterState.Loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Name Field
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = {
+                            name = it
+                            nameError = ""
+                        },
+                        label = { Text("Full Name") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Person, contentDescription = null)
+                        },
+                        isError = nameError.isNotEmpty(),
+                        supportingText = if (nameError.isNotEmpty()) {
+                            { Text(nameError) }
+                        } else null,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
                     )
-                } else {
-                    Text(
-                        text = stringResource(id = R.string.sign_up),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+
+                    // Email Field
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            emailError = ""
+                        },
+                        label = { Text(stringResource(id = R.string.email)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Email, contentDescription = null)
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        isError = emailError.isNotEmpty(),
+                        supportingText = if (emailError.isNotEmpty()) {
+                            { Text(emailError) }
+                        } else null,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
                     )
+
+                    // Password Field
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                            passwordError = ""
+                        },
+                        label = { Text(stringResource(id = R.string.password)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Lock, contentDescription = null)
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                )
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        isError = passwordError.isNotEmpty(),
+                        supportingText = if (passwordError.isNotEmpty()) {
+                            { Text(passwordError) }
+                        } else null,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    // Confirm Password Field
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = {
+                            confirmPassword = it
+                            confirmPasswordError = ""
+                        },
+                        label = { Text(stringResource(id = R.string.confirm_password)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Lock, contentDescription = null)
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(
+                                    if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                                )
+                            }
+                        },
+                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        isError = confirmPasswordError.isNotEmpty(),
+                        supportingText = if (confirmPasswordError.isNotEmpty()) {
+                            { Text(confirmPasswordError) }
+                        } else null,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Register Button
+                    Button(
+                        onClick = {
+                            if (validateInputs(name, email, password, confirmPassword) { nameErr, emailErr, passErr, confirmPassErr ->
+                                nameError = nameErr
+                                emailError = emailErr
+                                passwordError = passErr
+                                confirmPasswordError = confirmPassErr
+                            }) {
+                                authViewModel.registerWithEmail(email, password, name)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = registerState !is RegisterState.Loading
+                    ) {
+                        if (registerState is RegisterState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(id = R.string.sign_up),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Login Link
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Text(
-                    text = stringResource(id = R.string.already_have_account),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = stringResource(id = R.string.sign_in),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.clickable { onNavigateToLogin() }
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.already_have_account),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(id = R.string.sign_in),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        modifier = Modifier.clickable { onNavigateToLogin() }
+                    )
+                }
             }
         }
     }
