@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -19,6 +20,7 @@ import com.company.npw.presentation.cart.components.CartItemCard
 import com.company.npw.presentation.cart.components.CartSummary
 import com.company.npw.presentation.components.LoadingIndicator
 import com.company.npw.presentation.components.TopAppBar
+import com.company.npw.presentation.components.CustomTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

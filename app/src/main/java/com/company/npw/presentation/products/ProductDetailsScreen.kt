@@ -132,7 +132,7 @@ fun ProductDetailsScreen(
             }
             uiState.error != null -> {
                 ErrorMessage(
-                    message = uiState.error,
+                    message = uiState.error ?: "Unknown error",
                     modifier = Modifier.padding(paddingValues),
                     onRetry = { productDetailsViewModel.loadProduct(productId) }
                 )

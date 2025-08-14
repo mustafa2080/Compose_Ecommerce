@@ -123,7 +123,7 @@ fun ProductListScreen(
                 }
                 uiState.error != null -> {
                     ErrorMessage(
-                        message = uiState.error,
+                        message = uiState.error ?: "Unknown error",
                         onRetry = {
                             if (categoryId != null) {
                                 productListViewModel.loadProductsByCategory(categoryId)

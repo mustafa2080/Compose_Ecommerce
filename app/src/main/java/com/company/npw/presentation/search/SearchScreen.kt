@@ -167,8 +167,8 @@ fun SearchScreen(
                 }
                 uiState.error != null -> {
                     ErrorMessage(
-                        message = uiState.error,
-                        onRetry = { 
+                        message = uiState.error ?: "Unknown error",
+                        onRetry = {
                             if (searchQuery.isNotEmpty()) {
                                 searchViewModel.searchProducts(searchQuery)
                             }
