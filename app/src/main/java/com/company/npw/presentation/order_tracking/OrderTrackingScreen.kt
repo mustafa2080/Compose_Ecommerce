@@ -47,9 +47,10 @@ fun OrderTrackingScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CustomTopAppBar(
                 title = "Track Order",
-                onBackClick = onBackClick,
+                navigationIcon = Icons.Default.ArrowBack,
+                onNavigationClick = onBackClick,
                 actions = {
                     IconButton(
                         onClick = { viewModel.onEvent(OrderTrackingEvent.RefreshOrder) }

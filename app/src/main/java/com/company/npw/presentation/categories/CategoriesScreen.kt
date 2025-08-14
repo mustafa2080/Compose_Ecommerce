@@ -101,7 +101,7 @@ fun CategoriesScreen(
                 }
                 uiState.error != null -> {
                     ErrorMessage(
-                        message = uiState.error,
+                        message = uiState.error ?: "Unknown error",
                         onRetry = { categoriesViewModel.loadCategories() }
                     )
                 }

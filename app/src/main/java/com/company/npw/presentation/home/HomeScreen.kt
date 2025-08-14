@@ -85,7 +85,7 @@ fun HomeScreen(
             }
             uiState.error != null -> {
                 ErrorMessage(
-                    message = uiState.error,
+                    message = uiState.error ?: "Unknown error",
                     modifier = Modifier.padding(paddingValues),
                     onRetry = { homeViewModel.loadHomeData() }
                 )

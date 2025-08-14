@@ -52,9 +52,10 @@ fun CartScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CustomTopAppBar(
                 title = "Shopping Cart",
-                onBackClick = onBackClick,
+                navigationIcon = Icons.Default.ArrowBack,
+                onNavigationClick = onBackClick,
                 actions = {
                     if (cartState.cart.items.isNotEmpty()) {
                         IconButton(

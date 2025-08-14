@@ -29,7 +29,7 @@ fun CheckoutScreen(
 
     // Handle UI events
     LaunchedEffect(uiEvent) {
-        when (uiEvent) {
+        when (val event = uiEvent) {
             is CheckoutUiEvent.ShowMessage -> {
                 // Show snackbar or toast
             }
@@ -37,7 +37,7 @@ fun CheckoutScreen(
                 // Show error snackbar or toast
             }
             is CheckoutUiEvent.OrderPlaced -> {
-                onOrderPlaced(uiEvent.orderId)
+                onOrderPlaced(event.orderId)
             }
             null -> { /* No event */ }
         }
