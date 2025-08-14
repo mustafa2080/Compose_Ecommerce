@@ -212,9 +212,8 @@ fun Modifier.clickableWithScale(
             onClick()
         }
         .graphicsLayer {
-            LaunchedEffect(interactionSource) {
-                // Add press animation logic here if needed
-            }
+            // Graphics layer transformations only
+            // No composable functions allowed here
         }
 }
 
