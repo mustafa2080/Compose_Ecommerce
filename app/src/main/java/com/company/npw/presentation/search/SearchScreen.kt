@@ -51,7 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -75,7 +75,7 @@ fun SearchScreen(
     val uiState by searchViewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -117,7 +117,7 @@ fun SearchScreen(
                             onSearch = {
                                 if (searchQuery.isNotEmpty()) {
                                     searchViewModel.searchProducts(searchQuery)
-                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
                                 }
                             }
                         ),
