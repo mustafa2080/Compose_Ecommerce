@@ -90,12 +90,12 @@ class ReviewsViewModel @Inject constructor(
                                 createdAt = System.currentTimeMillis()
                             )
                             
-                            productRepository.submitReview(reviewToSubmit).collect { result ->
+                            productRepository.addReview(reviewToSubmit).collect { result ->
                                 when (result) {
-                                    is Resource.Loading -> {
+                                    is Resource.Loading<*> -> {
                                         _reviewsState.value = _reviewsState.value.copy(isSubmitting = true)
                                     }
-                                    is Resource.Success -> {
+                                    is Resource.Success<*> -> {
                                         _reviewsState.value = _reviewsState.value.copy(
                                             isSubmitting = false,
                                             newReviewRating = 0f,
@@ -104,7 +104,7 @@ class ReviewsViewModel @Inject constructor(
                                         _uiEvent.value = ReviewsUiEvent.ReviewSubmitted
                                         loadReviews(productId) // Reload reviews
                                     }
-                                    is Resource.Error -> {
+                                    is Resource.Error<*> -> {
                                         _reviewsState.value = _reviewsState.value.copy(isSubmitting = false)
                                         _uiEvent.value = ReviewsUiEvent.ShowError(result.message ?: "Failed to submit review")
                                     }

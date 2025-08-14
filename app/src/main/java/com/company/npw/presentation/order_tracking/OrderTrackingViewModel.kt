@@ -36,12 +36,12 @@ class OrderTrackingViewModel @Inject constructor(
         viewModelScope.launch {
             _trackingState.value = _trackingState.value.copy(isLoading = true, orderId = orderId)
             
-            orderRepository.getOrder(orderId).collect { result ->
+            orderRepository.getOrderById(orderId).collect { result ->
                 when (result) {
-                    is Resource.Loading -> {
+                    is Resource.Loading<*> -> {
                         _trackingState.value = _trackingState.value.copy(isLoading = true)
                     }
-                    is Resource.Success -> {
+                    is Resource.Success<*> -> {
                         val order = result.data
                         if (order != null) {
                             _trackingState.value = _trackingState.value.copy(
@@ -57,7 +57,7 @@ class OrderTrackingViewModel @Inject constructor(
                             )
                         }
                     }
-                    is Resource.Error -> {
+                    is Resource.Error<*> -> {
                         _trackingState.value = _trackingState.value.copy(
                             isLoading = false,
                             error = result.message

@@ -76,14 +76,14 @@ fun LoginScreen(
     var passwordError by remember { mutableStateOf("") }
 
     LaunchedEffect(loginState) {
-        when (loginState) {
+        when (val state = loginState) {
             is LoginState.Success -> {
                 context.showToast("Login successful!")
                 onNavigateToMain()
                 authViewModel.clearLoginState()
             }
             is LoginState.Error -> {
-                context.showToast(loginState.message)
+                context.showToast(state.message)
                 authViewModel.clearLoginState()
             }
             else -> {}

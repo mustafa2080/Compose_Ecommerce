@@ -79,14 +79,14 @@ fun RegisterScreen(
     var confirmPasswordError by remember { mutableStateOf("") }
 
     LaunchedEffect(registerState) {
-        when (registerState) {
+        when (val state = registerState) {
             is RegisterState.Success -> {
                 context.showToast("Registration successful!")
                 onNavigateToMain()
                 authViewModel.clearRegisterState()
             }
             is RegisterState.Error -> {
-                context.showToast(registerState.message)
+                context.showToast(state.message)
                 authViewModel.clearRegisterState()
             }
             else -> {}

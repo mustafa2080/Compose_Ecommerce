@@ -64,14 +64,14 @@ fun ForgotPasswordScreen(
     var emailError by remember { mutableStateOf("") }
 
     LaunchedEffect(resetPasswordState) {
-        when (resetPasswordState) {
+        when (val state = resetPasswordState) {
             is ResetPasswordState.Success -> {
-                context.showToast(resetPasswordState.message)
+                context.showToast(state.message)
                 authViewModel.clearResetPasswordState()
                 onNavigateBack()
             }
             is ResetPasswordState.Error -> {
-                context.showToast(resetPasswordState.message)
+                context.showToast(state.message)
                 authViewModel.clearResetPasswordState()
             }
             else -> {}
