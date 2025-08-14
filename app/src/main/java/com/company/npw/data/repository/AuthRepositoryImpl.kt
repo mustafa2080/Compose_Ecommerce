@@ -42,7 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun getCurrentUser(): Flow<Resource<User?>> = flow {
         try {
-            emit(Resource.Loading())
+            emit(Resource.Loading<User?>())
 
             val currentUser = firebaseAuthService.currentUser
             if (currentUser != null) {
@@ -53,15 +53,15 @@ class AuthRepositoryImpl @Inject constructor(
                     profileImageUrl = currentUser.photoUrl?.toString() ?: "",
                     isEmailVerified = currentUser.isEmailVerified
                 )
-                emit(Resource.Success(user))
+                emit(Resource.Success<User?>(user))
             } else {
-                emit(Resource.Success(null))
+                emit(Resource.Success<User?>(null))
             }
         } catch (e: Exception) {
-            emit(Resource.Error(e.message ?: "Unknown error"))
+            emit(Resource.Error<User?>(e.message ?: "Unknown error"))
         }
     }.catch { e ->
-        emit(Resource.Error(e.message ?: "Failed to get current user"))
+        emit(Resource.Error<User?>(e.message ?: "Failed to get current user"))
     }
 
     override val isUserLoggedIn: Boolean
