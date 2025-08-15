@@ -107,6 +107,7 @@ class ProductRepositoryImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
             emit(Resource.Error(e.message ?: Constants.ERROR_GENERIC))
         }
     }

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,6 +60,7 @@ class FirebaseAuthService @Inject constructor(
             }
             emit(Resource.Error(errorMessage))
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Log.e("FirebaseAuth", "General Error: ${e.message}", e)
             emit(Resource.Error(e.message ?: Constants.ERROR_GENERIC))
         }
@@ -113,6 +115,7 @@ class FirebaseAuthService @Inject constructor(
             }
             emit(Resource.Error(errorMessage))
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Log.e("FirebaseAuth", "General Error: ${e.message}", e)
             emit(Resource.Error(e.message ?: Constants.ERROR_GENERIC))
         }
@@ -141,6 +144,7 @@ class FirebaseAuthService @Inject constructor(
                 emit(Resource.Error(Constants.ERROR_GENERIC))
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             emit(Resource.Error(e.message ?: Constants.ERROR_GENERIC))
         }
     }
@@ -152,6 +156,7 @@ class FirebaseAuthService @Inject constructor(
             firebaseAuth.sendPasswordResetEmail(email).await()
             emit(Resource.Success(Constants.SUCCESS_PASSWORD_RESET))
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             emit(Resource.Error(e.message ?: Constants.ERROR_GENERIC))
         }
     }
@@ -163,6 +168,7 @@ class FirebaseAuthService @Inject constructor(
             firebaseAuth.signOut()
             emit(Resource.Success("Logged out successfully"))
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             emit(Resource.Error(e.message ?: Constants.ERROR_GENERIC))
         }
     }

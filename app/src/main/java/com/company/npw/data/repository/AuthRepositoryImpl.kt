@@ -57,6 +57,7 @@ class AuthRepositoryImpl @Inject constructor(
                 emit(Resource.Success<User?>(null))
             }
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
             emit(Resource.Error<User?>(e.message ?: "Failed to get current user"))
         }
     }
