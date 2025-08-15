@@ -16,20 +16,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.company.npw.data.seeder.DatabaseSeeder
 import com.company.npw.presentation.components.LoadingIndicator
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminSeedingScreen(
     onBackClick: () -> Unit,
-    databaseSeeder: DatabaseSeeder
+    viewModel: AdminSeedingViewModel = hiltViewModel()
 ) {
-    var isSeeding by remember { mutableStateOf(false) }
-    var seedingResult by remember { mutableStateOf<String?>(null) }
-    var seedingError by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsState()
     
     Scaffold(
         topBar = {
@@ -140,7 +135,7 @@ fun AdminSeedingScreen(
             }
             
             // Seeding Button
-            if (isSeeding) {
+            if (uiState.isSeeding) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -170,20 +165,7 @@ fun AdminSeedingScreen(
             } else {
                 Button(
                     onClick = {
-                        scope.launch {
-                            isSeeding = true
-                            seedingResult = null
-                            seedingError = null
-                            
-                            try {
-                                databaseSeeder.seedDatabase()
-                                seedingResult = "Database seeded successfully! ✅"
-                            } catch (e: Exception) {
-                                seedingError = "Failed to seed database: ${e.message}"
-                            } finally {
-                                isSeeding = false
-                            }
-                        }
+                        viewModel.seedDatabase()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -207,7 +189,7 @@ fun AdminSeedingScreen(
             }
             
             // Result Messages
-            seedingResult?.let { result ->
+            uiState.seedingResult?.let { result ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -223,8 +205,8 @@ fun AdminSeedingScreen(
                     )
                 }
             }
-            
-            seedingError?.let { error ->
+
+            uiState.seedingError?.let { error ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -250,8 +232,7 @@ fun AdminSeedingScreen(
                         
                         OutlinedButton(
                             onClick = {
-                                seedingError = null
-                                seedingResult = null
+                                viewModel.clearMessages()
                             },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = MaterialTheme.colorScheme.onErrorContainer
