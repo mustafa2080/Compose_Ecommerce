@@ -1,0 +1,54 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "products": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'SUPER_ADMIN'"
+    },
+    "categories": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'SUPER_ADMIN'"
+    },
+    "orders": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "carts": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "wishlists": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "reviews": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "coupons": {
+      ".read": true,
+      ".write": false
+    },
+    "banners": {
+      ".read": true,
+      ".write": false
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    }
+  }
+}
