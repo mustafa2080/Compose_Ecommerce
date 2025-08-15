@@ -16,19 +16,43 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
-        super.onCreate(savedInstanceState)
-        
-        enableEdgeToEdge()
-        
-        setContent {
-            ECommerceTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    ECommerceNavigation()
+        try {
+            val splashScreen = installSplashScreen()
+            super.onCreate(savedInstanceState)
+
+            enableEdgeToEdge()
+
+            setContent {
+                ECommerceTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        ECommerceNavigation()
+                    }
                 }
+            }
+        } catch (e: Exception) {
+            // Log the error and try to recover
+            android.util.Log.e("MainActivity", "Error in onCreate: ${e.message}", e)
+            super.onCreate(savedInstanceState)
+
+            // Try to set content without splash screen
+            try {
+                setContent {
+                    ECommerceTheme {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.background
+                        ) {
+                            ECommerceNavigation()
+                        }
+                    }
+                }
+            } catch (contentException: Exception) {
+                android.util.Log.e("MainActivity", "Failed to set content: ${contentException.message}", contentException)
+                // If all else fails, finish the activity
+                finish()
             }
         }
     }

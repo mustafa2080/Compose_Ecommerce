@@ -71,17 +71,30 @@ fun SplashScreen(
         when (authState) {
             is AuthState.Authenticated -> {
                 delay(500) // Small delay to ensure smooth transition
-                onNavigateToMain()
+                try {
+                    onNavigateToMain()
+                } catch (e: Exception) {
+                    // If navigation fails, fallback to login
+                    onNavigateToLogin()
+                }
             }
             is AuthState.Unauthenticated -> {
                 delay(500) // Small delay to ensure smooth transition
-                onNavigateToLogin()
+                try {
+                    onNavigateToLogin()
+                } catch (e: Exception) {
+                    // Navigation failed, but we can't do much here
+                }
             }
             is AuthState.Loading -> {
-                // Add timeout for loading state to prevent infinite loading
-                delay(3000) // 3 seconds timeout
+                // Reduced timeout for loading state to prevent infinite loading
+                delay(5000) // 5 seconds timeout
                 if (authState is AuthState.Loading) {
-                    onNavigateToLogin() // Fallback to login if still loading
+                    try {
+                        onNavigateToLogin() // Fallback to login if still loading
+                    } catch (e: Exception) {
+                        // Navigation failed, but we can't do much here
+                    }
                 }
             }
         }

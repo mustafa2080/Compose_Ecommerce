@@ -55,21 +55,29 @@ class AuthViewModel @Inject constructor(
                                 preferencesManager.setLoggedIn(true)
                                 _authState.value = AuthState.Authenticated(user)
                             } else {
+                                // User data is null, clear login state
                                 preferencesManager.setLoggedIn(false)
+                                preferencesManager.clearUserId()
                                 _authState.value = AuthState.Unauthenticated
                             }
                         }
                         is Resource.Error -> {
+                            // Error occurred, clear login state
                             preferencesManager.setLoggedIn(false)
+                            preferencesManager.clearUserId()
                             _authState.value = AuthState.Unauthenticated
                         }
                         is Resource.Loading -> {
                             // This shouldn't happen since we filter out loading states
-                            _authState.value = AuthState.Loading
+                            // But if it does, fallback to unauthenticated after a delay
+                            kotlinx.coroutines.delay(2000)
+                            preferencesManager.setLoggedIn(false)
+                            _authState.value = AuthState.Unauthenticated
                         }
                         null -> {
-                            // Timeout occurred
+                            // Timeout occurred, clear login state
                             preferencesManager.setLoggedIn(false)
+                            preferencesManager.clearUserId()
                             _authState.value = AuthState.Unauthenticated
                         }
                     }
@@ -79,7 +87,12 @@ class AuthViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 // Handle any unexpected errors during auth check
-                preferencesManager.setLoggedIn(false)
+                try {
+                    preferencesManager.setLoggedIn(false)
+                    preferencesManager.clearUserId()
+                } catch (prefException: Exception) {
+                    // Even preferences failed, just set state
+                }
                 _authState.value = AuthState.Unauthenticated
             }
         }

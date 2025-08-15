@@ -13,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -166,15 +167,32 @@ class FirebaseAuthService @Inject constructor(
     private suspend fun getUserFromFirebase(userId: String): User {
         return try {
             Log.d("FirebaseAuth", "Getting user data from database for: $userId")
-            val snapshot = firebaseDatabase.reference
-                .child(Constants.USERS_COLLECTION)
-                .child(userId)
-                .get()
-                .await()
 
-            val user = snapshot.getValue(User::class.java) ?: User(id = userId)
-            Log.d("FirebaseAuth", "Retrieved user from database: $user")
-            user
+            // Add timeout to prevent infinite loading
+            val snapshot = withTimeoutOrNull(10000) { // 10 seconds timeout
+                firebaseDatabase.reference
+                    .child(Constants.USERS_COLLECTION)
+                    .child(userId)
+                    .get()
+                    .await()
+            }
+
+            if (snapshot != null) {
+                val user = snapshot.getValue(User::class.java) ?: User(id = userId)
+                Log.d("FirebaseAuth", "Retrieved user from database: $user")
+                user
+            } else {
+                Log.w("FirebaseAuth", "Database query timed out, using Firebase Auth data")
+                // Fallback to Firebase Auth data
+                val firebaseUser = firebaseAuth.currentUser
+                User(
+                    id = userId,
+                    email = firebaseUser?.email ?: "",
+                    name = firebaseUser?.displayName ?: "",
+                    profileImageUrl = firebaseUser?.photoUrl?.toString() ?: "",
+                    isEmailVerified = firebaseUser?.isEmailVerified ?: false
+                )
+            }
         } catch (e: Exception) {
             Log.e("FirebaseAuth", "Error getting user from database: ${e.message}", e)
             // Return basic user info from Firebase Auth
@@ -192,15 +210,22 @@ class FirebaseAuthService @Inject constructor(
     private suspend fun saveUserToDatabase(user: User) {
         try {
             Log.d("FirebaseAuth", "Saving user to database: $user")
-            firebaseDatabase.reference
-                .child(Constants.USERS_COLLECTION)
-                .child(user.id)
-                .setValue(user)
-                .await()
-            Log.d("FirebaseAuth", "User saved to database successfully")
+
+            // Add timeout to prevent hanging
+            withTimeoutOrNull(10000) { // 10 seconds timeout
+                firebaseDatabase.reference
+                    .child(Constants.USERS_COLLECTION)
+                    .child(user.id)
+                    .setValue(user)
+                    .await()
+            }?.let {
+                Log.d("FirebaseAuth", "User saved to database successfully")
+            } ?: run {
+                Log.w("FirebaseAuth", "Saving user to database timed out")
+            }
         } catch (e: Exception) {
             Log.e("FirebaseAuth", "Error saving user to database: ${e.message}", e)
-            // Don't throw error, just log it
+            // Don't throw error, just log it - user can still login with Firebase Auth data
         }
     }
 }
