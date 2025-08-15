@@ -67,10 +67,14 @@ fun SplashScreen(
     }
 
     // Separate LaunchedEffect for auth state to avoid blocking animations
+    // Guard to avoid double navigation
+    val hasNavigated = remember { androidx.compose.runtime.mutableStateOf(false) }
+
     LaunchedEffect(authState) {
+        if (hasNavigated.value) return@LaunchedEffect
         when (authState) {
             is AuthState.Authenticated -> {
-                delay(500) // Small delay to ensure smooth transition
+                hasNavigated.value = true
                 try {
                     onNavigateToMain()
                 } catch (e: Exception) {
@@ -79,7 +83,7 @@ fun SplashScreen(
                 }
             }
             is AuthState.Unauthenticated -> {
-                delay(500) // Small delay to ensure smooth transition
+                hasNavigated.value = true
                 try {
                     onNavigateToLogin()
                 } catch (e: Exception) {
@@ -87,15 +91,7 @@ fun SplashScreen(
                 }
             }
             is AuthState.Loading -> {
-                // Reduced timeout for loading state to prevent infinite loading
-                delay(5000) // 5 seconds timeout
-                if (authState is AuthState.Loading) {
-                    try {
-                        onNavigateToLogin() // Fallback to login if still loading
-                    } catch (e: Exception) {
-                        // Navigation failed, but we can't do much here
-                    }
-                }
+                // Do nothing here; wait for real state to avoid race/exit issues
             }
         }
     }

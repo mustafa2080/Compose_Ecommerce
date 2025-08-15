@@ -84,17 +84,26 @@ fun LoginScreen(
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
+    // Prevent double navigation on repeated emissions
+    val didNavigate = remember { mutableStateOf(false) }
+
     LaunchedEffect(loginState) {
         when (val state = loginState) {
             is LoginState.Success -> {
-                context.showToast("Login successful!")
-                authViewModel.clearLoginState()
-                delay(100) // Small delay to ensure state is cleared
-                onNavigateToMain()
+                if (!didNavigate.value) {
+                    didNavigate.value = true
+                    context.showToast("Login successful!")
+                    // Don't clear immediately to avoid losing state before Nav
+                    onNavigateToMain()
+                    // Clear after a short delay
+                    delay(200)
+                    authViewModel.clearLoginState()
+                }
             }
             is LoginState.Error -> {
                 context.showToast(state.message)
                 authViewModel.clearLoginState()
+                didNavigate.value = false
             }
             else -> {}
         }
