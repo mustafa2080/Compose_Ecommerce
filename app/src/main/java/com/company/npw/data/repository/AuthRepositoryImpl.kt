@@ -58,10 +58,8 @@ class AuthRepositoryImpl @Inject constructor(
                 emit(Resource.Success<User?>(null))
             }
         } catch (e: Exception) {
-            emit(Resource.Error<User?>(e.message ?: "Unknown error"))
+            emit(Resource.Error<User?>(e.message ?: "Failed to get current user"))
         }
-    }.catch { e ->
-        emit(Resource.Error<User?>(e.message ?: "Failed to get current user"))
     }
 
     override val isUserLoggedIn: Boolean

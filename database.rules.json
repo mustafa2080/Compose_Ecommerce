@@ -8,11 +8,11 @@
     },
     "products": {
       ".read": true,
-      ".write": false
+      ".write": "root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'SUPER_ADMIN'"
     },
     "categories": {
       ".read": true,
-      ".write": false
+      ".write": "root.child('users').child(auth.uid).child('role').val() === 'ADMIN' || root.child('users').child(auth.uid).child('role').val() === 'SUPER_ADMIN'"
     },
     "orders": {
       "$uid": {

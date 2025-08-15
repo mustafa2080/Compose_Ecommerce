@@ -4,6 +4,7 @@ import android.util.Log
 import com.company.npw.core.util.Constants
 import com.company.npw.core.util.Resource
 import com.company.npw.domain.model.User
+import com.company.npw.domain.model.UserRole
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
@@ -85,10 +86,12 @@ class FirebaseAuthService @Inject constructor(
                 firebaseUser.updateProfile(profileUpdates).await()
 
                 // Create user document in database
+                val userRole = determineUserRole(email)
                 val user = User(
                     id = firebaseUser.uid,
                     email = email,
                     name = name,
+                    role = userRole,
                     isEmailVerified = firebaseUser.isEmailVerified
                 )
 
@@ -226,6 +229,15 @@ class FirebaseAuthService @Inject constructor(
         } catch (e: Exception) {
             Log.e("FirebaseAuth", "Error saving user to database: ${e.message}", e)
             // Don't throw error, just log it - user can still login with Firebase Auth data
+        }
+    }
+
+    private fun determineUserRole(email: String): UserRole {
+        return when (email.lowercase()) {
+            Constants.SUPER_ADMIN_EMAIL.lowercase() -> UserRole.SUPER_ADMIN
+            Constants.ADMIN_EMAIL.lowercase() -> UserRole.ADMIN
+            in Constants.ADMIN_EMAILS.map { it.lowercase() } -> UserRole.ADMIN
+            else -> UserRole.USER
         }
     }
 }

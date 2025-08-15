@@ -12,10 +12,18 @@ data class User(
     val profileImageUrl: String = "",
     val address: Address? = null,
     val isEmailVerified: Boolean = false,
+    val role: UserRole = UserRole.USER,
+    val isActive: Boolean = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val preferences: UserPreferences = UserPreferences()
-) : Parcelable
+) : Parcelable {
+    val isAdmin: Boolean
+        get() = role == UserRole.ADMIN
+
+    val isSuperAdmin: Boolean
+        get() = role == UserRole.SUPER_ADMIN
+}
 
 @Parcelize
 data class Address(
@@ -35,3 +43,9 @@ data class UserPreferences(
     val emailNotifications: Boolean = true,
     val pushNotifications: Boolean = true
 ) : Parcelable
+
+enum class UserRole {
+    USER,           // عضو عادي
+    ADMIN,          // أدمن
+    SUPER_ADMIN     // سوبر أدمن
+}

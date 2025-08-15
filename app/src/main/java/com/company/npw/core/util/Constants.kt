@@ -94,4 +94,17 @@ object Constants {
     const val ORDER_STATUS_SHIPPED = "shipped"
     const val ORDER_STATUS_DELIVERED = "delivered"
     const val ORDER_STATUS_CANCELLED = "cancelled"
+
+    // Admin Credentials
+    const val ADMIN_EMAIL = "admin@ecommerce.com"
+    const val ADMIN_PASSWORD = "Admin@123456"
+    const val SUPER_ADMIN_EMAIL = "superadmin@ecommerce.com"
+    const val SUPER_ADMIN_PASSWORD = "SuperAdmin@123456"
+
+    // Admin Emails List (for checking admin status)
+    val ADMIN_EMAILS = listOf(
+        ADMIN_EMAIL,
+        SUPER_ADMIN_EMAIL,
+        "test@example.com" // للاختبار
+    )
 }
