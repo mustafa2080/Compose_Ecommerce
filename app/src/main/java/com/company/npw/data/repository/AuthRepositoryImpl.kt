@@ -5,7 +5,6 @@ import com.company.npw.data.remote.firebase.auth.FirebaseAuthService
 import com.company.npw.domain.model.User
 import com.company.npw.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton

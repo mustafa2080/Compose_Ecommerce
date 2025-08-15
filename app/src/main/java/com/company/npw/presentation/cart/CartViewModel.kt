@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -44,7 +45,10 @@ class CartViewModel @Inject constructor(
 
     private fun loadCart() {
         viewModelScope.launch {
-            authRepository.getCurrentUser().collect { userResource ->
+            try {
+                _cartState.value = _cartState.value.copy(isLoading = true, error = null)
+
+                val userResource = authRepository.getCurrentUser().first { it !is Resource.Loading }
                 when (userResource) {
                     is Resource.Success -> {
                         val userId = userResource.data?.id
@@ -70,6 +74,11 @@ class CartViewModel @Inject constructor(
                                     }
                                 }
                             }
+                        } else {
+                            _cartState.value = _cartState.value.copy(
+                                isLoading = false,
+                                error = "User not found"
+                            )
                         }
                     }
                     is Resource.Error -> {
@@ -79,16 +88,25 @@ class CartViewModel @Inject constructor(
                         )
                     }
                     is Resource.Loading -> {
+                        // This shouldn't happen since we filter out loading states
                         _cartState.value = _cartState.value.copy(isLoading = true)
                     }
                 }
+            } catch (e: Exception) {
+                _cartState.value = _cartState.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "Failed to load cart"
+                )
             }
         }
     }
 
     private fun updateCartItemQuantity(cartItem: CartItem, newQuantity: Int) {
         viewModelScope.launch {
-            authRepository.getCurrentUser().collect { userResource ->
+            try {
+                _cartState.value = _cartState.value.copy(isUpdating = true)
+
+                val userResource = authRepository.getCurrentUser().first { it !is Resource.Loading }
                 when (userResource) {
                     is Resource.Success -> {
                         val userId = userResource.data?.id
@@ -110,19 +128,29 @@ class CartViewModel @Inject constructor(
                                     }
                                 }
                             }
+                        } else {
+                            _cartState.value = _cartState.value.copy(isUpdating = false)
+                            _uiEvent.value = CartUiEvent.ShowError("User not found")
                         }
                     }
                     else -> {
+                        _cartState.value = _cartState.value.copy(isUpdating = false)
                         _uiEvent.value = CartUiEvent.ShowError("User not authenticated")
                     }
                 }
+            } catch (e: Exception) {
+                _cartState.value = _cartState.value.copy(isUpdating = false)
+                _uiEvent.value = CartUiEvent.ShowError(e.message ?: "Failed to update cart")
             }
         }
     }
 
     private fun removeCartItem(cartItemId: String) {
         viewModelScope.launch {
-            authRepository.getCurrentUser().collect { userResource ->
+            try {
+                _cartState.value = _cartState.value.copy(isUpdating = true)
+
+                val userResource = authRepository.getCurrentUser().first { it !is Resource.Loading }
                 when (userResource) {
                     is Resource.Success -> {
                         val userId = userResource.data?.id
@@ -143,19 +171,29 @@ class CartViewModel @Inject constructor(
                                     }
                                 }
                             }
+                        } else {
+                            _cartState.value = _cartState.value.copy(isUpdating = false)
+                            _uiEvent.value = CartUiEvent.ShowError("User not found")
                         }
                     }
                     else -> {
+                        _cartState.value = _cartState.value.copy(isUpdating = false)
                         _uiEvent.value = CartUiEvent.ShowError("User not authenticated")
                     }
                 }
+            } catch (e: Exception) {
+                _cartState.value = _cartState.value.copy(isUpdating = false)
+                _uiEvent.value = CartUiEvent.ShowError(e.message ?: "Failed to remove item")
             }
         }
     }
 
     private fun clearCart() {
         viewModelScope.launch {
-            authRepository.getCurrentUser().collect { userResource ->
+            try {
+                _cartState.value = _cartState.value.copy(isUpdating = true)
+
+                val userResource = authRepository.getCurrentUser().first { it !is Resource.Loading }
                 when (userResource) {
                     is Resource.Success -> {
                         val userId = userResource.data?.id
@@ -176,12 +214,19 @@ class CartViewModel @Inject constructor(
                                     }
                                 }
                             }
+                        } else {
+                            _cartState.value = _cartState.value.copy(isUpdating = false)
+                            _uiEvent.value = CartUiEvent.ShowError("User not found")
                         }
                     }
                     else -> {
+                        _cartState.value = _cartState.value.copy(isUpdating = false)
                         _uiEvent.value = CartUiEvent.ShowError("User not authenticated")
                     }
                 }
+            } catch (e: Exception) {
+                _cartState.value = _cartState.value.copy(isUpdating = false)
+                _uiEvent.value = CartUiEvent.ShowError(e.message ?: "Failed to clear cart")
             }
         }
     }

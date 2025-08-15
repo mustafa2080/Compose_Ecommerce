@@ -106,14 +106,33 @@ fun someFlow(): Flow<Resource<Data>> = flow {
 }
 ```
 
+## 🔧 **الإصلاحات المطبقة:**
+
+### **1. AuthRepositoryImpl.getCurrentUser():**
+- إزالة `.catch` block مع `emit`
+- استخدام `try-catch` فقط داخل `flow`
+
+### **2. CartViewModel:**
+- إصلاح nested flow.collect calls
+- استخدام `first()` لتجنب nested collections
+- إضافة proper error handling
+
+### **3. CheckoutViewModel:**
+- إصلاح nested flow.collect في `loadCheckoutData()`
+- إصلاح nested flow.collect في `placeOrder()`
+- استخدام `first()` بدلاً من nested collect
+
 ## 🎯 **النتيجة:**
 - ✅ تم إصلاح Flow exception transparency violation
 - ✅ تحسين معالجة الأخطاء في Authentication
+- ✅ إصلاح nested flow collections في ViewModels
 - ✅ منع الكراش عند تسجيل الدخول
-- ✅ تحسين استقرار التطبيق
+- ✅ تحسين استقرار التطبيق في Cart و Checkout
 
 ## 📝 **ملاحظات للمطورين:**
 1. **لا تستخدم `emit` داخل `.catch` blocks**
-2. **استخدم `try-catch` داخل `flow` builder**
-3. **استخدم `emitAll` أو `flowOf` في `.catch` إذا لزم الأمر**
-4. **اختبر Flow operations جيداً لتجنب هذه المشاكل**
+2. **تجنب nested `flow.collect` calls**
+3. **استخدم `first()` للحصول على قيمة واحدة من Flow**
+4. **استخدم `try-catch` داخل `flow` builder**
+5. **استخدم `emitAll` أو `flowOf` في `.catch` إذا لزم الأمر**
+6. **اختبر Flow operations جيداً لتجنب هذه المشاكل**

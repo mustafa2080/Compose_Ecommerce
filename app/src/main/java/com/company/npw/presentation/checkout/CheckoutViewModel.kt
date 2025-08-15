@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,9 +47,10 @@ class CheckoutViewModel @Inject constructor(
 
     private fun loadCheckoutData() {
         viewModelScope.launch {
-            _checkoutState.value = _checkoutState.value.copy(isLoading = true)
-            
-            authRepository.getCurrentUser().collect { userResource ->
+            try {
+                _checkoutState.value = _checkoutState.value.copy(isLoading = true, error = null)
+
+                val userResource = authRepository.getCurrentUser().first { it !is Resource.Loading }
                 when (userResource) {
                     is Resource.Success -> {
                         val userId = userResource.data?.id
@@ -59,10 +61,11 @@ class CheckoutViewModel @Inject constructor(
                                     is Resource.Success -> {
                                         val cart = cartResource.data ?: Cart()
                                         if (cart.isEmpty) {
+                                            _checkoutState.value = _checkoutState.value.copy(isLoading = false)
                                             _uiEvent.value = CheckoutUiEvent.ShowError("Cart is empty")
                                             return@collect
                                         }
-                                        
+
                                         _checkoutState.value = _checkoutState.value.copy(
                                             cart = cart,
                                             isLoading = false
@@ -78,6 +81,11 @@ class CheckoutViewModel @Inject constructor(
                                     is Resource.Loading -> { /* Already loading */ }
                                 }
                             }
+                        } else {
+                            _checkoutState.value = _checkoutState.value.copy(
+                                isLoading = false,
+                                error = "User not found"
+                            )
                         }
                     }
                     is Resource.Error -> {
@@ -86,8 +94,16 @@ class CheckoutViewModel @Inject constructor(
                             error = userResource.message
                         )
                     }
-                    is Resource.Loading -> { /* Already loading */ }
+                    is Resource.Loading -> {
+                        // This shouldn't happen since we filter out loading states
+                        _checkoutState.value = _checkoutState.value.copy(isLoading = true)
+                    }
                 }
+            } catch (e: Exception) {
+                _checkoutState.value = _checkoutState.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "Failed to load checkout data"
+                )
             }
         }
     }
@@ -143,23 +159,24 @@ class CheckoutViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _checkoutState.value = _checkoutState.value.copy(isPlacingOrder = true)
-            
-            authRepository.getCurrentUser().collect { userResource ->
+            try {
+                _checkoutState.value = _checkoutState.value.copy(isPlacingOrder = true)
+
+                val userResource = authRepository.getCurrentUser().first { it !is Resource.Loading }
                 when (userResource) {
                     is Resource.Success -> {
                         val userId = userResource.data?.id
                         if (userId != null) {
                             val order = createOrderFromCheckout(userId, state)
-                            
+
                             orderRepository.createOrder(order).collect { result ->
                                 when (result) {
                                     is Resource.Success -> {
                                         _checkoutState.value = _checkoutState.value.copy(isPlacingOrder = false)
-                                        
+
                                         // Clear cart after successful order
                                         cartRepository.clearCart(userId)
-                                        
+
                                         _uiEvent.value = CheckoutUiEvent.OrderPlaced(result.data ?: "")
                                     }
                                     is Resource.Error -> {
@@ -169,6 +186,9 @@ class CheckoutViewModel @Inject constructor(
                                     is Resource.Loading -> { /* Already loading */ }
                                 }
                             }
+                        } else {
+                            _checkoutState.value = _checkoutState.value.copy(isPlacingOrder = false)
+                            _uiEvent.value = CheckoutUiEvent.ShowError("User not found")
                         }
                     }
                     else -> {
@@ -176,6 +196,9 @@ class CheckoutViewModel @Inject constructor(
                         _uiEvent.value = CheckoutUiEvent.ShowError("User not authenticated")
                     }
                 }
+            } catch (e: Exception) {
+                _checkoutState.value = _checkoutState.value.copy(isPlacingOrder = false)
+                _uiEvent.value = CheckoutUiEvent.ShowError(e.message ?: "Failed to place order")
             }
         }
     }
