@@ -47,51 +47,65 @@ fun SplashScreen(
     val scale = remember { Animatable(0f) }
     val alpha = remember { Animatable(0f) }
 
+    // Animation effects
     LaunchedEffect(key1 = true) {
-        scale.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = Constants.ANIMATION_DURATION_MEDIUM,
-                delayMillis = 100
+        try {
+            scale.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = 800,
+                    delayMillis = 100
+                )
             )
-        )
-        alpha.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = Constants.ANIMATION_DURATION_MEDIUM,
-                delayMillis = 200
+            alpha.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = 800,
+                    delayMillis = 200
+                )
             )
-        )
-
-        delay(Constants.SPLASH_DELAY)
+        } catch (e: Exception) {
+            // Animation failed, continue anyway
+        }
     }
 
-    // Separate LaunchedEffect for auth state to avoid blocking animations
-    // Guard to avoid double navigation
+    // Navigation logic with proper delay and error handling
     val hasNavigated = remember { androidx.compose.runtime.mutableStateOf(false) }
 
     LaunchedEffect(authState) {
         if (hasNavigated.value) return@LaunchedEffect
-        when (authState) {
-            is AuthState.Authenticated -> {
-                hasNavigated.value = true
-                try {
+
+        try {
+            // Wait for animations to complete
+            delay(2000)
+
+            when (authState) {
+                is AuthState.Authenticated -> {
+                    hasNavigated.value = true
                     onNavigateToMain()
-                } catch (e: Exception) {
-                    // If navigation fails, fallback to login
+                }
+                is AuthState.Unauthenticated -> {
+                    hasNavigated.value = true
                     onNavigateToLogin()
                 }
+                is AuthState.Loading -> {
+                    // Wait a bit more for auth to resolve
+                    delay(1000)
+                    if (!hasNavigated.value) {
+                        hasNavigated.value = true
+                        onNavigateToLogin() // Default to login if auth takes too long
+                    }
+                }
             }
-            is AuthState.Unauthenticated -> {
+        } catch (e: Exception) {
+            // If anything fails, navigate to login as fallback
+            if (!hasNavigated.value) {
                 hasNavigated.value = true
                 try {
                     onNavigateToLogin()
-                } catch (e: Exception) {
-                    // Navigation failed, but we can't do much here
+                } catch (navException: Exception) {
+                    // Last resort - do nothing and let user restart app
                 }
-            }
-            is AuthState.Loading -> {
-                // Do nothing here; wait for real state to avoid race/exit issues
             }
         }
     }
